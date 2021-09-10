@@ -24,6 +24,7 @@ extension View {
     }
 }
 
+
 struct ContentView: View {
     
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
@@ -32,6 +33,9 @@ struct ContentView: View {
     @State private var showingScore = false
     @State private var scoreTitle = ""
     @State private var currentScore = 0
+    @State private var correctFlag = false
+    @State private var animationAmount = 0.0
+    @State private var beenTapped = false
     
     var body: some View {
         
@@ -49,11 +53,25 @@ struct ContentView: View {
                     }
                 ForEach(0 ..< 3) { number in
                     Button(action: {
-                        self.flagTapped(number)
+                        withAnimation{
+                            self.flagTapped(number)
+                            if correctFlag{
+                                self.animationAmount += 360
+                            }
+                        }
                     }) {
-                        Image(self.countries[number])
-                            .flagStyle(with: Image(self.countries[number]))
-                    }
+                        withAnimation{
+                            Image(self.countries[number])
+                                .flagStyle(with: Image(self.countries[number]))
+                        }
+                        }
+                    .animation(
+                        Animation.easeIn(duration: 1)
+                    )
+                    .rotation3DEffect(.degrees( (number == correctAnswer) ? animationAmount : 0.0), axis: (x: 0, y: 1, z: 0))
+                    
+                    
+                    
                     Spacer()
                 }
                 Text("Current score is \(currentScore)")
@@ -73,17 +91,20 @@ struct ContentView: View {
         if number == correctAnswer {
             scoreTitle = "Correct"
             currentScore += 1
+            correctFlag = true
         } else {
             scoreTitle = "Wrong, that is the flag of \(self.countries[number])"
             currentScore = currentScore-1
         }
-
+        
         showingScore = true
     }
     
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        correctFlag = false
+        beenTapped = false
     }
 }
 
