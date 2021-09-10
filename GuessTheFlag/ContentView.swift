@@ -36,6 +36,9 @@ struct ContentView: View {
     @State private var correctFlag = false
     @State private var animationAmount = 0.0
     @State private var beenTapped = false
+    @State private var falseAnim = false
+    @State private var shrinkForWrong: CGFloat = 1.0
+    @State private var opacityForWrongFlags = 1.0
     
     var body: some View {
         
@@ -57,6 +60,7 @@ struct ContentView: View {
                             self.flagTapped(number)
                             if correctFlag{
                                 self.animationAmount += 360
+                                
                             }
                         }
                     }) {
@@ -65,12 +69,9 @@ struct ContentView: View {
                                 .flagStyle(with: Image(self.countries[number]))
                         }
                         }
-                    .animation(
-                        Animation.easeIn(duration: 1)
-                    )
                     .rotation3DEffect(.degrees( (number == correctAnswer) ? animationAmount : 0.0), axis: (x: 0, y: 1, z: 0))
-                    
-                    
+                    .opacity(!beenTapped ? 1.0: (number == correctAnswer) ? 1.0 : opacityForWrongFlags)
+                    .scaleEffect((number == correctAnswer) ? 1.0 : shrinkForWrong)
                     
                     Spacer()
                 }
@@ -92,9 +93,12 @@ struct ContentView: View {
             scoreTitle = "Correct"
             currentScore += 1
             correctFlag = true
+            beenTapped = true
+            opacityForWrongFlags = 0.25
         } else {
             scoreTitle = "Wrong, that is the flag of \(self.countries[number])"
             currentScore = currentScore-1
+            shrinkForWrong = 0.2
         }
         
         showingScore = true
@@ -104,7 +108,9 @@ struct ContentView: View {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
         correctFlag = false
-        beenTapped = false
+        falseAnim = true
+        shrinkForWrong = 1.0
+        opacityForWrongFlags = 1.0
     }
 }
 
